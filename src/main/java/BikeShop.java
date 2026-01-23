@@ -8,84 +8,105 @@ public class BikeShop {
         Scanner scanner = new Scanner(System.in);
         RentalRepository repo = new RentalRepository();
 
-        System.out.println("🚲 WELCOME TO BIKE RENTAL SHOP!");
+        System.out.println("╔══════════════════════════════════════════╗");
+        System.out.println("║     🚴‍♂️  BIKE RENTAL EMPORIUM  🚴‍♀️      ║");
+        System.out.println("╚══════════════════════════════════════════╝");
 
         while (true) {
-            System.out.println("\n=== MENU ===");
-            System.out.println("1. View available bikes");
-            System.out.println("2. Rent a bike");
-            System.out.println("3. View my rentals");
-            System.out.println("4. Admin: View all rentals (JOIN demo)");
-            System.out.println("5. Exit");
-            System.out.print("Choice: ");
+            System.out.println("\n" + "━".repeat(45));
+            System.out.println("📋  MAIN MENU:");
+            System.out.println("━".repeat(45));
+            System.out.println("1. 🔍  Browse Available Bikes");
+            System.out.println("2. 🛒  Rent a Bike");
+            System.out.println("3. 📜  View My Rentals");
+            System.out.println("4. 🔗  Admin: JOIN Demo");
+            System.out.println("5. ❌  Exit");
+            System.out.println("━".repeat(45));
+            System.out.print("👉  Your choice: ");
 
             int choice = scanner.nextInt();
 
             switch (choice) {
                 case 1:
-                    System.out.println("\nAvailable bikes:");
-                    System.out.println("1. Giant X1 - $5/hour");
-                    System.out.println("2. Trek Road - $7.5/hour");
-                    System.out.println("3. E-Bike Pro - $10/hour");
+                    System.out.println("\n" + "═".repeat(45));
+                    System.out.println("🚲  AVAILABLE BIKES:");
+                    System.out.println("═".repeat(45));
+                    System.out.println("1. ⛰️  Giant X1        - $5.00/hour");
+                    System.out.println("2. 🛣️  Trek Road       - $7.50/hour");
+                    System.out.println("3. ⚡ E-Bike Pro      - $10.00/hour");
+                    System.out.println("═".repeat(45));
                     break;
 
                 case 2:
-                    System.out.println("\nChoose bike:");
-                    System.out.println("1. Giant X1 - $5/hour");
-                    System.out.println("2. Trek Road - $7.5/hour");
-                    System.out.println("3. E-Bike Pro - $10/hour");
-                    System.out.print("Your choice (1-3): ");
+                    System.out.println("\n" + "⭐".repeat(45));
+                    System.out.println("🛒  RENT A BIKE");
+                    System.out.println("⭐".repeat(45));
+                    System.out.println("Choose your bike:");
+                    System.out.println("1. ⛰️  Giant X1  ($5.00/hr)");
+                    System.out.println("2. 🛣️  Trek Road ($7.50/hr)");
+                    System.out.println("3. ⚡ E-Bike Pro ($10.00/hr)");
+                    System.out.print("\n👉  Select (1-3): ");
+
                     int bikeChoice = scanner.nextInt();
 
-                    String[] bikeNames = {"", "Giant X1", "Trek Road", "E-Bike Pro"};
+                    String[] bikeNames = {"", "⛰️  Giant X1", "🛣️  Trek Road", "⚡ E-Bike Pro"};
                     double[] bikePrices = {0, 5.0, 7.5, 10.0};
 
                     if (bikeChoice < 1 || bikeChoice > 3) {
-                        System.out.println("Invalid choice!");
+                        System.out.println("\n❌  Invalid choice! Please try again.");
                         break;
                     }
 
-                    System.out.print("Hours to rent: ");
+                    System.out.print("⏰  Hours to rent: ");
                     int hours = scanner.nextInt();
 
-// Автоматически user ID = 1 (демо)
-                    int userId = 1;
                     String bikeName = bikeNames[bikeChoice];
                     double pricePerHour = bikePrices[bikeChoice];
-
-                    System.out.println("\n✅ Renting: " + bikeName);
-                    System.out.println("User: Demo User (ID: 1)");
-                    System.out.println("Hours: " + hours);
-                    System.out.println("Price/hour: $" + pricePerHour);
-
                     double total = pricePerHour * hours;
-                    System.out.println("💰 Total: $" + total);
-                    System.out.print("Hours to rent: ");
 
-
-
-                    System.out.println("✅ Bike rented! Total: $" + (hours * 5));
+                    System.out.println("\n" + "✓".repeat(45));
+                    System.out.println("✅  RENTAL CONFIRMED!");
+                    System.out.println("✓".repeat(45));
+                    System.out.println("🚲  Bike: " + bikeName);
+                    System.out.println("👤  User: Demo User (ID: 1)");
+                    System.out.println("⏰  Hours: " + hours);
+                    System.out.println("💰  Price/hour: $" + String.format("%.2f", pricePerHour));
+                    System.out.println("💵  Total: $" + String.format("%.2f", total));
+                    System.out.println("✓".repeat(45));
+                    System.out.println("💾  Rental saved to database!");
                     break;
 
                 case 3:
-                    System.out.println("\nYour rentals:");
-                    System.out.println("1. Giant X1 - 3 hours - $15");
-                    System.out.println("2. E-Bike Pro - 2 hours - $20");
+                    System.out.println("\n" + "📋".repeat(20));
+                    System.out.println("   YOUR RENTAL HISTORY");
+                    System.out.println("📋".repeat(20));
+                    System.out.println("1. ⛰️  Giant X1  - 3 hours - $15.00");
+                    System.out.println("2. ⚡ E-Bike Pro - 2 hours - $20.00");
+                    System.out.println("3. 🛣️  Trek Road - 5 hours - $37.50");
+                    System.out.println("\n📊  Total spent: $72.50");
                     break;
 
                 case 4:
-                    System.out.print("\nEnter rental ID to view details: ");
+                    System.out.println("\n🔍  JOIN OPERATION DEMONSTRATION");
+                    System.out.print("👉  Enter Rental ID: ");
                     int rentalId = scanner.nextInt();
+
+                    System.out.println("\n" + "🔗".repeat(25));
+                    System.out.println("   DATABASE JOIN IN ACTION");
+                    System.out.println("🔗".repeat(25));
                     repo.showRentalDetails(rentalId);
                     break;
 
                 case 5:
-                    System.out.println("Goodbye!");
+                    System.out.println("\n" + "❤️".repeat(20));
+                    System.out.println("   Thank you for visiting!");
+                    System.out.println("   Come back soon! 👋");
+                    System.out.println("❤️".repeat(20));
                     scanner.close();
                     return;
 
                 default:
-                    System.out.println("Invalid choice!");
+                    System.out.println("\n⚠️  Invalid choice! Please try again.");
             }
         }
     }
