@@ -1,0 +1,115 @@
+package com.bikerental.repositories;
+
+import com.bikerental.DatabaseConnection;
+import com.bikerental.models.Bike;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
+
+public class BikeRepository {
+
+    public List<Bike> findAllAvailable() {
+        List<Bike> bikes = new ArrayList<>();
+
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) {
+                System.out.println("❌ Нет подключения к БД!");
+                return bikes;
+            }
+
+            String query = "SELECT * FROM public.bikes WHERE is_available = true ORDER BY id";
+            System.out.println("📊 SQL: " + query);
+
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            int count = 0;
+            while (rs.next()) {
+                Bike bike = new Bike();
+                bike.setId(rs.getInt("id"));
+                bike.setModel(rs.getString("model"));
+                bike.setPricePerHour(rs.getDouble("price_per_hour"));
+                bike.setAvailable(rs.getBoolean("is_available"));
+
+                bikes.add(bike);
+                count++;
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+
+            System.out.println("✅ Загружено велосипедов из БД: " + count);
+
+        } catch (Exception e) {
+            System.out.println("❌ Ошибка загрузки велосипедов: " + e.getMessage());
+        }
+
+        return bikes;
+    }
+
+    public Bike findById(int id) {
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) {
+                System.out.println("❌ Нет подключения к БД!");
+                return null;
+            }
+
+            PreparedStatement pstmt = conn.prepareStatement("SELECT * FROM public.bikes WHERE id = ?");
+            pstmt.setInt(1, id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                Bike bike = new Bike();
+                bike.setId(rs.getInt("id"));
+                bike.setModel(rs.getString("model"));
+                bike.setPricePerHour(rs.getDouble("price_per_hour"));
+                bike.setAvailable(rs.getBoolean("is_available"));
+
+                rs.close();
+                pstmt.close();
+                conn.close();
+                return bike;
+            }
+
+            rs.close();
+            pstmt.close();
+            conn.close();
+
+        } catch (Exception e) {
+            System.out.println("❌ Ошибка поиска велосипеда: " + e.getMessage());
+        }
+        return null;
+    }
+
+    public boolean updateStatus(int bikeId, String status) {
+        boolean isAvailable = status.equals("AVAILABLE");
+
+        try {
+            Connection conn = DatabaseConnection.getConnection();
+            if (conn == null) {
+                System.out.println("❌ Нет подключения к БД!");
+                return false;
+            }
+
+            PreparedStatement pstmt = conn.prepareStatement("UPDATE public.bikes SET is_available = ? WHERE id = ?");
+            pstmt.setBoolean(1, isAvailable);
+            pstmt.setInt(2, bikeId);
+
+            int rows = pstmt.executeUpdate();
+
+            pstmt.close();
+            conn.close();
+
+            System.out.println("🔄 Обновлен статус велосипеда ID=" + bikeId + ", is_available=" + isAvailable);
+            return rows > 0;
+
+        } catch (Exception e) {
+            System.out.println("❌ Ошибка обновления статуса: " + e.getMessage());
+            return false;
+        }
+    }
+}
