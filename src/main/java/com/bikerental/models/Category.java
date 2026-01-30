@@ -4,7 +4,7 @@ public class Category {
     private int id;
     private String name;
 
-    // Конструктор
+
     public Category() {}
 
     public Category(int id, String name) {
@@ -12,7 +12,7 @@ public class Category {
         this.name = name;
     }
 
-    // Геттеры и сеттеры
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

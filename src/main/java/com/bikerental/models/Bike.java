@@ -18,7 +18,7 @@ public class Bike {
         this.isAvailable = isAvailable;
     }
 
-    // Геттеры и сеттеры
+
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 

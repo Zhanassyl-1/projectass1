@@ -11,7 +11,7 @@ public class DatabaseConnection {
                     "0000"
             );
         } catch (SQLException e) {
-            System.out.println("❌ PostgreSQL Error: " + e.getMessage());
+            System.out.println(" PostgreSQL Error: " + e.getMessage());
             return null;
         }
     }

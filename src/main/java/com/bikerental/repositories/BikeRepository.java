@@ -15,7 +15,7 @@ public class BikeRepository {
         try {
             Connection conn = DatabaseConnection.getConnection();
             if (conn == null) {
-                System.out.println("❌ Нет подключения к БД!");
+                System.out.println(" Нет подключения к БД!");
                 return bikes;
             }
 
@@ -41,10 +41,10 @@ public class BikeRepository {
             stmt.close();
             conn.close();
 
-            System.out.println("✅ Загружено велосипедов из БД: " + count);
+            System.out.println(" Загружено велосипедов из БД: " + count);
 
         } catch (Exception e) {
-            System.out.println("❌ Ошибка загрузки велосипедов: " + e.getMessage());
+            System.out.println(" Ошибка загрузки велосипедов: " + e.getMessage());
         }
 
         return bikes;
