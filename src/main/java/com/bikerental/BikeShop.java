@@ -37,7 +37,7 @@ public class BikeShop {
                     showRentalHistoryMenu(scanner, rentalRepo);
                     break;
                 case 4:
-                    showJoinDemo(scanner, rentalRepo);
+                    initializeDatabase(rentalRepo);
                     break;
                 case 5:
                     initializeDatabase(rentalRepo);
@@ -110,9 +110,9 @@ public class BikeShop {
     }
 
     private static void rentBike(Scanner scanner, BikeRepository bikeRepo, RentalRepository rentalRepo) {
-        System.out.println("\n" + "⭐".repeat(45));
+        System.out.println("\n" + "=".repeat(45));
         System.out.println("RENT A BIKE");
-        System.out.println("⭐".repeat(45));
+        System.out.println("=".repeat(45));
 
         List<Bike> availableBikes = bikeRepo.findAllAvailable();
         if (availableBikes.isEmpty()) {
