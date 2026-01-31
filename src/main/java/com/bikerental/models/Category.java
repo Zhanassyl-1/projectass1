@@ -5,11 +5,8 @@ public class Category {
     private int id;
     private String name;
 
-    // Конструктор по умолчанию
     public Category() {
     }
-
-    // Основной конструктор
     public Category(int id, String name) {
         this.id = id;
         this.name = name;
