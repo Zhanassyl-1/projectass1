@@ -7,7 +7,7 @@ public class Bike {
     private double pricePerHour;
     private boolean isAvailable;
 
-    // Конструкторы
+
     public Bike() {}
 
     public Bike(int id, String model, String type, double pricePerHour, boolean isAvailable) {
