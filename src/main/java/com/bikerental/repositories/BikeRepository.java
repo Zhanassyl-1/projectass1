@@ -54,7 +54,7 @@ public class BikeRepository {
         try {
             Connection conn = DatabaseConnection.getConnection();
             if (conn == null) {
-                System.out.println("❌ Нет подключения к БД!");
+                System.out.println(" Нет подключения к БД!");
                 return null;
             }
 
@@ -80,7 +80,7 @@ public class BikeRepository {
             conn.close();
 
         } catch (Exception e) {
-            System.out.println("❌ Ошибка поиска велосипеда: " + e.getMessage());
+            System.out.println(" Ошибка поиска велосипеда: " + e.getMessage());
         }
         return null;
     }
@@ -91,7 +91,7 @@ public class BikeRepository {
         try {
             Connection conn = DatabaseConnection.getConnection();
             if (conn == null) {
-                System.out.println("❌ Нет подключения к БД!");
+                System.out.println(" Нет подключения к БД!");
                 return false;
             }
 
@@ -104,11 +104,11 @@ public class BikeRepository {
             pstmt.close();
             conn.close();
 
-            System.out.println("🔄 Обновлен статус велосипеда ID=" + bikeId + ", is_available=" + isAvailable);
+            System.out.println(" Обновлен статус велосипеда ID=" + bikeId + ", is_available=" + isAvailable);
             return rows > 0;
 
         } catch (Exception e) {
-            System.out.println("❌ Ошибка обновления статуса: " + e.getMessage());
+            System.out.println(" Ошибка обновления статуса: " + e.getMessage());
             return false;
         }
     }
