@@ -16,6 +16,7 @@
     </properties>
 
     <dependencies>
+        <!-- ТОЛЬКО PostgreSQL драйвер -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>

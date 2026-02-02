@@ -20,7 +20,7 @@ public class BikeShop {
         System.out.println("╚══════════════════════════════════════════╝");
 
         System.out.println("\nChecking database setup...");
-        rentalRepo.createTablesIfNotExist();
+
 
         while (true) {
             printMainMenu();
@@ -366,7 +366,7 @@ public class BikeShop {
 
     public static void initializeDatabase(RentalRepository rentalRepo) {
         System.out.println("\nINITIALIZING DATABASE...");
-        rentalRepo.createTablesIfNotExist();
+
         System.out.println("Database ready!");
     }
 

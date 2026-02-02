@@ -8,11 +8,6 @@ import java.util.List;
 
 public class RentalRepository {
 
-    public void createTablesIfNotExist() {
-        createUsersTableIfNotExists();
-        createRentalsTableIfNotExists();
-        System.out.println("Database tables are ready");
-    }
 
     private void createUsersTableIfNotExists() {
         String sql = """
