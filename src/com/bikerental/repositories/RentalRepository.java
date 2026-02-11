@@ -2,12 +2,17 @@ package com.bikerental.repositories;
 
 import com.bikerental.DatabaseConnection;
 import com.bikerental.models.Rental;
+import com.bikerental.models.RentalDetails;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RentalRepository {
 
+    public void initializeSchema() {
+        createUsersTableIfNotExists();
+        createRentalsTableIfNotExists();
+    }
 
     private void createUsersTableIfNotExists() {
         String sql = """
@@ -309,12 +314,30 @@ public class RentalRepository {
     }
 
     public void showRentalDetails(int rentalId) {
+        RentalDetails details = getFullRentalDescription(rentalId);
+        if (details == null) {
+            System.out.println("Rental ID " + rentalId + " not found");
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                if (conn != null) {
+                    showAvailableRentalIds(conn);
+                }
+            } catch (SQLException e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+            return;
+        }
+        displayRentalDetails(details);
+    }
+
+    public RentalDetails getFullRentalDescription(int rentalId) {
         String sql = """
             SELECT r.id, r.rental_date, r.hours, r.total_price, r.status,
-                   b.model as bike_model, 
+                   b.model as bike_model, b.type as bike_type,
+                   c.name as category_name,
                    u.first_name, u.last_name, u.phone
             FROM public.rentals r
             JOIN public.bikes b ON r.bike_id = b.id
+            LEFT JOIN public.categories c ON b.category_id = c.id
             JOIN public.users u ON r.user_id = u.id
             WHERE r.id = ?
             """;
@@ -326,28 +349,47 @@ public class RentalRepository {
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                displayRentalDetails(rs);
-            } else {
-                System.out.println("Rental ID " + rentalId + " not found");
-                showAvailableRentalIds(conn);
+                return mapRentalDetails(rs);
             }
 
         } catch (SQLException e) {
             System.out.println("Error: " + e.getMessage());
         }
+
+        return null;
     }
 
-    private void displayRentalDetails(ResultSet rs) throws SQLException {
+    private RentalDetails mapRentalDetails(ResultSet rs) throws SQLException {
+        RentalDetails details = new RentalDetails();
+        details.setRentalId(rs.getInt("id"));
+        Timestamp timestamp = rs.getTimestamp("rental_date");
+        if (timestamp != null) {
+            details.setRentalDate(timestamp.toLocalDateTime());
+        }
+        details.setHours(rs.getInt("hours"));
+        details.setTotalPrice(rs.getDouble("total_price"));
+        details.setStatus(rs.getString("status"));
+        details.setBikeModel(rs.getString("bike_model"));
+        details.setBikeType(rs.getString("bike_type"));
+        details.setCategoryName(rs.getString("category_name"));
+        details.setCustomerName(rs.getString("first_name") + " " + rs.getString("last_name"));
+        details.setCustomerPhone(rs.getString("phone"));
+        return details;
+    }
+
+    private void displayRentalDetails(RentalDetails details) {
         System.out.println("\nRENTAL DETAILS:");
         System.out.println("-".repeat(50));
-        System.out.println("Rental ID: " + rs.getInt("id"));
-        System.out.println("Date: " + rs.getTimestamp("rental_date"));
-        System.out.println("Bike: " + rs.getString("bike_model"));
-        System.out.println("Customer: " + rs.getString("first_name") + " " + rs.getString("last_name"));
-        System.out.println("Phone: " + rs.getString("phone"));
-        System.out.println("Hours: " + rs.getInt("hours"));
-        System.out.println("Total: $" + rs.getDouble("total_price"));
-        System.out.println("Status: " + rs.getString("status"));
+        System.out.println("Rental ID: " + details.getRentalId());
+        System.out.println("Date: " + details.getRentalDate());
+        System.out.println("Bike: " + details.getBikeModel());
+        System.out.println("Type: " + details.getBikeType());
+        System.out.println("Category: " + (details.getCategoryName() == null ? "N/A" : details.getCategoryName()));
+        System.out.println("Customer: " + details.getCustomerName());
+        System.out.println("Phone: " + details.getCustomerPhone());
+        System.out.println("Hours: " + details.getHours());
+        System.out.println("Total: $" + details.getTotalPrice());
+        System.out.println("Status: " + details.getStatus());
         System.out.println("-".repeat(50));
     }
 

@@ -6,6 +6,8 @@ public class Bike {
     private String type;
     private double pricePerHour;
     private boolean isAvailable;
+    private Integer categoryId;
+    private String categoryName;
 
 
     public Bike() {}
@@ -33,4 +35,10 @@ public class Bike {
 
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }
+
+    public Integer getCategoryId() { return categoryId; }
+    public void setCategoryId(Integer categoryId) { this.categoryId = categoryId; }
+
+    public String getCategoryName() { return categoryName; }
+    public void setCategoryName(String categoryName) { this.categoryName = categoryName; }
 }

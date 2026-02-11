@@ -1,25 +1,34 @@
 package com.bikerental;
 
+import com.bikerental.factories.RepositoryFactory;
+import com.bikerental.models.Category;
+import com.bikerental.models.Role;
 import com.bikerental.repositories.BikeRepository;
+import com.bikerental.repositories.CategoryRepository;
 import com.bikerental.repositories.RentalRepository;
+import com.bikerental.security.AccessManager;
+import com.bikerental.validation.InputValidator;
 import com.bikerental.models.Bike;
 import com.bikerental.models.Rental;
 import java.util.Scanner;
 import java.util.List;
-import java.util.InputMismatchException;
+import java.util.function.Predicate;
 
 public class BikeShop {
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        BikeRepository bikeRepo = new BikeRepository();
-        RentalRepository rentalRepo = new RentalRepository();
+        BikeRepository bikeRepo = RepositoryFactory.create(BikeRepository.class);
+        RentalRepository rentalRepo = RepositoryFactory.create(RentalRepository.class);
+        CategoryRepository categoryRepo = RepositoryFactory.create(CategoryRepository.class);
+        AccessManager accessManager = AccessManager.getInstance();
 
         System.out.println("╔══════════════════════════════════════════╗");
         System.out.println("║          BIKE RENTAL EMPORIUM            ║");
         System.out.println("╚══════════════════════════════════════════╝");
 
         System.out.println("\nChecking database setup...");
+        accessManager.login(scanner);
 
 
         while (true) {
@@ -37,12 +46,21 @@ public class BikeShop {
                     showRentalHistoryMenu(scanner, rentalRepo);
                     break;
                 case 4:
-                    initializeDatabase(rentalRepo);
+                    if (accessManager.requireAny(Role.ADMIN, Role.MANAGER)) {
+                        showJoinDemo(scanner, rentalRepo);
+                    }
                     break;
                 case 5:
-                    initializeDatabase(rentalRepo);
+                    if (accessManager.requireAny(Role.ADMIN, Role.MANAGER, Role.EDITOR)) {
+                        manageCategories(scanner, categoryRepo);
+                    }
                     break;
                 case 6:
+                    if (accessManager.requireAny(Role.ADMIN)) {
+                        initializeDatabase(bikeRepo, rentalRepo, categoryRepo);
+                    }
+                    break;
+                case 7:
                     exitProgram(scanner);
                     return;
             }
@@ -56,13 +74,13 @@ public class BikeShop {
 
             try {
                 int choice = Integer.parseInt(input);
-                if (choice >= 1 && choice <= 6) {
+                if (choice >= 1 && choice <= 7) {
                     return choice;
                 } else {
-                    System.out.println("Please enter number 1-6!");
+                    System.out.println("Please enter number 1-7!");
                 }
             } catch (NumberFormatException e) {
-                System.out.println("Invalid input! Please enter a NUMBER (1-6)");
+                System.out.println("Invalid input! Please enter a NUMBER (1-7)");
                 System.out.println("Example: type '1' for Browse Bikes");
             }
         }
@@ -75,9 +93,10 @@ public class BikeShop {
         System.out.println("1. Browse Available Bikes");
         System.out.println("2. Rent a Bike");
         System.out.println("3. View Rental History");
-        System.out.println("4. Database JOIN Demo");
-        System.out.println("5. Initialize Database");
-        System.out.println("6. Exit");
+        System.out.println("4. Full Rental Description (JOIN)");
+        System.out.println("5. Manage Categories (secured)");
+        System.out.println("6. Initialize Database (admin only)");
+        System.out.println("7. Exit");
         System.out.println("━".repeat(45));
     }
 
@@ -93,16 +112,18 @@ public class BikeShop {
             return;
         }
 
-        System.out.printf("%-4s %-30s %-15s %-10s%n", "ID", "MODEL", "PRICE/HOUR", "STATUS");
-        System.out.println("-".repeat(65));
+        System.out.printf("%-4s %-26s %-15s %-14s %-10s%n", "ID", "MODEL", "PRICE/HOUR", "CATEGORY", "STATUS");
+        System.out.println("-".repeat(80));
 
         for (Bike bike : bikes) {
             String status = bike.isAvailable() ? "AVAILABLE" : "RENTED";
+            String category = bike.getCategoryName() == null ? "N/A" : bike.getCategoryName();
 
-            System.out.printf("%-4d %-30s $%-14.2f %s%n",
+            System.out.printf("%-4d %-26s $%-14.2f %-14s %s%n",
                     bike.getId(),
                     bike.getModel(),
                     bike.getPricePerHour(),
+                    category,
                     status);
         }
 
@@ -136,15 +157,32 @@ public class BikeShop {
         }
 
         System.out.println("\nCUSTOMER INFORMATION:");
-        String firstName = getStringInput(scanner, "First Name: ");
-        String lastName = getStringInput(scanner, "Last Name: ");
-        String phone = getStringInput(scanner, "Phone Number: ");
+        String firstName = getValidatedInput(
+                scanner,
+                "First Name: ",
+                List.of(InputValidator.isNotBlank(), InputValidator.isValidName()),
+                "Use letters only, 2-30 characters."
+        );
+        String lastName = getValidatedInput(
+                scanner,
+                "Last Name: ",
+                List.of(InputValidator.isNotBlank(), InputValidator.isValidName()),
+                "Use letters only, 2-30 characters."
+        );
+        String phone = getValidatedInput(
+                scanner,
+                "Phone Number (digits only): ",
+                List.of(InputValidator.isNotBlank(), InputValidator.isValidPhone()),
+                "Use 7-15 digits without spaces."
+        );
 
-        int hours = getIntInput(scanner, "Hours to rent (1-24): ");
-        if (hours < 1 || hours > 24) {
-            System.out.println("Hours must be between 1 and 24!");
-            return;
-        }
+        String hoursInput = getValidatedInput(
+                scanner,
+                "Hours to rent (1-24): ",
+                List.of(InputValidator.isNotBlank(), InputValidator.isValidHours()),
+                "Hours must be between 1 and 24."
+        );
+        int hours = Integer.parseInt(hoursInput);
 
         double total = selectedBike.getPricePerHour() * hours;
 
@@ -228,7 +266,8 @@ public class BikeShop {
     }
 
     private static void displayAllRentals(RentalRepository rentalRepo) {
-
+        List<Rental> rentals = rentalRepo.findAll();
+        displayRentals(rentals, "All Rentals");
     }
 
     private static void viewHistoryByTime(Scanner scanner, RentalRepository rentalRepo) {
@@ -364,8 +403,12 @@ public class BikeShop {
         }
     }
 
-    public static void initializeDatabase(RentalRepository rentalRepo) {
+    public static void initializeDatabase(BikeRepository bikeRepo, RentalRepository rentalRepo, CategoryRepository categoryRepo) {
         System.out.println("\nINITIALIZING DATABASE...");
+        categoryRepo.createTableIfNotExists();
+        categoryRepo.seedDefaultsIfEmpty();
+        bikeRepo.initializeSchema();
+        rentalRepo.initializeSchema();
 
         System.out.println("Database ready!");
     }
@@ -378,14 +421,16 @@ public class BikeShop {
 
     private static void showAvailableBikesList(List<Bike> bikes) {
         System.out.println("\nAVAILABLE BIKES:");
-        System.out.printf("%-4s %-25s %-15s%n", "ID", "MODEL", "PRICE/HOUR");
-        System.out.println("-".repeat(45));
+        System.out.printf("%-4s %-22s %-14s %-14s%n", "ID", "MODEL", "PRICE/HOUR", "CATEGORY");
+        System.out.println("-".repeat(60));
 
         for (Bike bike : bikes) {
-            System.out.printf("%-4d %-25s $%-14.2f%n",
+            String category = bike.getCategoryName() == null ? "N/A" : bike.getCategoryName();
+            System.out.printf("%-4d %-22s $%-13.2f %-14s%n",
                     bike.getId(),
                     bike.getModel(),
-                    bike.getPricePerHour());
+                    bike.getPricePerHour(),
+                    category);
         }
     }
 
@@ -414,15 +459,15 @@ public class BikeShop {
         }
     }
 
-    private static String getStringInput(Scanner scanner, String prompt) {
+    private static String getValidatedInput(Scanner scanner, String prompt, List<Predicate<String>> rules, String errorMessage) {
         while (true) {
             System.out.print(prompt);
             String input = scanner.nextLine().trim();
 
-            if (!input.isEmpty()) {
+            if (InputValidator.validateAll(input, rules)) {
                 return input;
             }
-            System.out.println("This field cannot be empty!");
+            System.out.println("Invalid input: " + errorMessage);
         }
     }
 
@@ -484,5 +529,42 @@ public class BikeShop {
     private static String formatDate(java.time.LocalDateTime date) {
         if (date == null) return "N/A";
         return date.toLocalDate().toString();
+    }
+
+    private static void manageCategories(Scanner scanner, CategoryRepository categoryRepo) {
+        while (true) {
+            System.out.println("\nCATEGORY MANAGEMENT");
+            System.out.println("1. List categories");
+            System.out.println("2. Add category");
+            System.out.println("3. Back");
+            System.out.print("Choose option: ");
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    List<Category> categories = categoryRepo.findAll();
+                    if (categories.isEmpty()) {
+                        System.out.println("No categories found.");
+                    } else {
+                        categories.forEach(category ->
+                                System.out.println(category.getId() + ". " + category.getName()));
+                    }
+                    break;
+                case "2":
+                    String name = getValidatedInput(
+                            scanner,
+                            "Category name: ",
+                            List.of(InputValidator.isNotBlank()),
+                            "Category name is required."
+                    );
+                    boolean created = categoryRepo.create(name);
+                    System.out.println(created ? "Category added." : "Failed to add category.");
+                    break;
+                case "3":
+                    return;
+                default:
+                    System.out.println("Please enter 1-3!");
+            }
+        }
     }
 }
