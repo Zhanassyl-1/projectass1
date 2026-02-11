@@ -515,6 +515,8 @@ public class BikeShop {
                     bikeName,
                     customerName,
                     rental.getHours(),
+
+
                     rental.getTotalPrice(),
                     formatDate(rental.getRentalDate()));
 
